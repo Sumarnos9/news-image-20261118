@@ -1,21 +1,28 @@
-// Entry program for the make.fun bounty news-image-20261118.
+// Entry program for the make.fun bounty news-image-20261118:
+// "Sum up 18 November's world news in one image".
 //
-// Copies the prepared image ./entry.png to the output location the
-// competition harness expects: $MAKEFUN_OUTPUT_DIR/entry.png, or
-// /output/entry.png when that variable is not set.
+// The finished artwork is ./entry.png, sitting next to this file.
+// All this program does is place an exact copy of it where the
+// competition harness expects it: $MAKEFUN_OUTPUT_DIR/entry.png,
+// falling back to /output/entry.png when that variable is unset.
 //
-// Only the Node.js standard library is used (node:fs and node:path),
-// so the program is deterministic and makes no network requests.
+// Only node:fs and node:path are used. No network, no randomness,
+// no image processing — the output bytes are always identical to
+// the artwork that was reviewed before submission.
+
 import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
-const src = join(import.meta.dirname, "entry.png");
-// Guard: refuse to run if the prepared image is missing, so a failed
-// build can never silently produce an empty or stale output.
-if (!existsSync(src)) {
+// The artwork has to be present beside this program. If it is not,
+// stop loudly instead of writing an empty or stale entry.
+const source = join(import.meta.dirname, "entry.png");
+if (!existsSync(source)) {
   throw new Error("entry.png is missing next to main.ts");
 }
 
-const outDir = process.env.MAKEFUN_OUTPUT_DIR || "/output";
-mkdirSync(outDir, { recursive: true });
-copyFileSync(src, join(outDir, "entry.png"));
+const outputDir = process.env.MAKEFUN_OUTPUT_DIR || "/output";
+mkdirSync(outputDir, { recursive: true });
+
+const destination = join(outputDir, "entry.png");
+copyFileSync(source, destination);
+console.log(`wrote ${destination}`);
